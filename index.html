@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>CryptoLens — Dashboard Kripto Real-Time</title>
+<link rel="icon" href="/assets/favicon.svg">
+</head>
+<body style="font-family:sans-serif;background:#0b1320;color:#e6eef8;padding:20px;">
+<h1>CryptoLens</h1>
+<p>Dashboard harga, chart, dan berita kripto secara real-time.</p>
+<p><a href="/terms.html" style="color:#22c55e;">Terms & Disclaimer</a></p>
+<div id="market" style="margin-top:20px;">Memuat harga kripto...</div>
+<div id="news" style="margin-top:20px;">Memuat berita kripto...</div>
+<script>
+async function loadMarket() {
+  const res = await fetch('/.netlify/functions/coingecko?vs_currency=usd');
+  const data = await res.json();
+  document.getElementById('market').innerHTML = '<h3>Top 5 Coins</h3>' + data.slice(0,5).map(c =>
+    `${c.name}: $${c.current_price} (${c.price_change_percentage_24h.toFixed(2)}%)`
+  ).join('<br>');
+}
+async function loadNews() {
+  const res = await fetch('/.netlify/functions/newsapi');
+  const data = await res.json();
+  document.getElementById('news').innerHTML = '<h3>Berita Kripto</h3>' + data.map(n =>
+    `<a href="${n.url}" target="_blank" style="color:#22c55e">${n.title}</a> - <small>${n.source}</small>`
+  ).join('<br>');
+}
+loadMarket();
+loadNews();
+</script>
+</body>
+</html>
