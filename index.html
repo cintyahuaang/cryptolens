@@ -2,34 +2,94 @@
 <html lang="id">
 <head>
 <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>CryptoLens — Dashboard Kripto Real-Time</title>
-  <meta name="description" content="Pantau harga, grafik, dan berita kripto secara langsung dengan CryptoLens.">
-  <link rel="icon" href="/assets/favicon.png">
-<body style="font-family:sans-serif;background:#0b1320;color:#e6eef8;padding:20px;text-align:center">
-  <img src="/assets/logo.png" alt="CryptoLens Logo" width="140" style="margin-bottom:10px;">
-  <h1>CryptoLens</h1>
-  <p>Dashboard harga, chart, dan berita kripto secara real-time.</p>
-<p><a href="/terms.html" style="color:#22c55e;">Terms & Disclaimer</a></p>
-<div id="market" style="margin-top:20px;">Memuat harga kripto...</div>
-<div id="news" style="margin-top:20px;">Memuat berita kripto...</div>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>CryptoLens Lite+ — Dashboard Kripto Real-Time</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="icon" href="/assets/favicon.png">
+<style>
+body { background-color: #0b1320; color: #e6eef8; font-family: 'Segoe UI', sans-serif; }
+.card { background: #111a2f; border: none; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.4); }
+a { color: #22c55e; text-decoration: none; }
+a:hover { color: #38ef7d; }
+footer { text-align:center; padding:20px; font-size:0.85em; color:#94a3b8; }
+</style>
+</head>
+<body>
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>CryptoLens Lite+</h2>
+    <button class="btn btn-success" onclick="refreshData()">🔄 Refresh</button>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-md-8">
+      <div class="card p-3">
+        <h5>Top 20 Coins</h5>
+        <table class="table table-dark table-striped mt-2" id="cryptoTable">
+          <thead><tr><th>#</th><th>Nama</th><th>Harga</th><th>24h%</th></tr></thead>
+          <tbody><tr><td colspan="4">Memuat data...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card p-3">
+        <h5>Chart BTC/USDT</h5>
+        <iframe src="https://www.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT&interval=60&theme=dark" width="100%" height="400" frameborder="0"></iframe>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3 mt-3">
+    <div class="col-md-8">
+      <div class="card p-3">
+        <h5>Berita Kripto</h5>
+        <div id="news">Memuat berita...</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card p-3">
+        <h5>Converter</h5>
+        <input id="amount" type="number" class="form-control" placeholder="Jumlah...">
+        <select id="coin" class="form-select mt-2"></select>
+        <div id="result" class="mt-2">Pilih koin untuk konversi.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+© 2025 CryptoLens — Built with public APIs. | <a href="/terms.html">Terms</a>
+</footer>
+
 <script>
-async function loadMarket() {
+async function loadMarket(){
   const res = await fetch('/.netlify/functions/coingecko?vs_currency=usd');
   const data = await res.json();
-  document.getElementById('market').innerHTML = '<h3>Top 5 Coins</h3>' + data.slice(0,5).map(c =>
-    `${c.name}: $${c.current_price} (${c.price_change_percentage_24h.toFixed(2)}%)`
-  ).join('<br>');
+  const tbody = document.querySelector('#cryptoTable tbody');
+  tbody.innerHTML = "";
+  data.slice(0,20).forEach((coin, i)=>{
+    const row = document.createElement('tr');
+    row.innerHTML = `<td>${i+1}</td><td><img src="${coin.image}" width="20"> ${coin.name}</td>
+    <td>$${coin.current_price.toLocaleString()}</td>
+    <td style="color:${coin.price_change_percentage_24h>0?'#22c55e':'#ef4444'}">${coin.price_change_percentage_24h.toFixed(2)}%</td>`;
+    tbody.appendChild(row);
+  });
+  const select = document.getElementById('coin');
+  select.innerHTML = data.slice(0,10).map(c=>`<option value="${c.current_price}">${c.name}</option>`).join('');
 }
-async function loadNews() {
+async function loadNews(){
   const res = await fetch('/.netlify/functions/newsapi');
   const data = await res.json();
-  document.getElementById('news').innerHTML = '<h3>Berita Kripto</h3>' + data.map(n =>
-    `<a href="${n.url}" target="_blank" style="color:#22c55e">${n.title}</a> - <small>${n.source}</small>`
-  ).join('<br>');
+  const div = document.getElementById('news');
+  div.innerHTML = data.map(n => `<a href="${n.url}" target="_blank">${n.title}</a> - <small>${n.source}</small>`).join('<br>');
 }
-loadMarket();
-loadNews();
+function refreshData(){ loadMarket(); loadNews(); }
+document.getElementById('coin').addEventListener('change', ()=>{
+  const val = document.getElementById('coin').value;
+  const amt = document.getElementById('amount').value || 1;
+  document.getElementById('result').textContent = `${amt} = ${(amt * val).toLocaleString()} USD`;
+});
+window.onload = ()=>{ loadMarket(); loadNews(); };
 </script>
 </body>
 </html>
