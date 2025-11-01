@@ -3,7 +3,7 @@
 // Markets via CoinCap | News via CryptoPanic (AllOrigins proxy)
 // ==============================
 
-const PROXY = "https://api.allorigins.win/raw?url=";
+const PROXY = "https://api.codetabs.com/v1/proxy?quest=";
 const TOKEN = "425f8a56dd62c0dcb199e18d5d2a72600aad0f24";
 
 const API = {};
