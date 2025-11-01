@@ -11,6 +11,11 @@
 }
 
 body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;}
+@media (max-width: 600px) {
+  .tvwrap {
+    height: 260px;
+  }
+}
 
 .container{max-width:1200px;margin:0 auto;padding:16px;}
 .header{display:flex;align-items:center;justify-content:space-between;}
