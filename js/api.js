@@ -1,49 +1,9 @@
 
-// CryptoApp API helpers (CORS-safe for GitHub Pages)
+// CryptoApp v5 — Prices via CoinCap (CORS ok), News (ID) via Coinvestasi RSS + corsproxy + thumbnails
 
 const API = {
-  markets: "https://api.allorigins.win/raw?url=" + 
-    encodeURIComponent("https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=20&page=1&sparkline=false&price_change_percentage=24h"),
-  // ✅ NEWS INDONESIA + THUMBNAIL
-
-API.news = "https://corsproxy.io/?" + 
-  encodeURIComponent("https://api.rss2json.com/v1/api.json?rss_url=https://crypto.news/id/feed/");
-
-async function fetchNews(){
-  const wrap = document.getElementById("newsList");
-  try{
-    const res = await fetch(API.news, { cache: "no-store" });
-    const json = await res.json();
-
-    if(!json.items){
-      wrap.innerHTML = `<div class="loader">Belum ada berita untuk ditampilkan.</div>`;
-      return;
-    }
-
-    wrap.innerHTML = "";
-    json.items.slice(0,8).forEach(item => {
-      const d = new Date(item.pubDate);
-      const img = item.thumbnail || "https://via.placeholder.com/100x70?text=News";
-
-      const el = document.createElement("div");
-      el.className = "news-item";
-      el.style.display = "flex";
-      el.style.gap = "12px";
-      el.style.alignItems = "flex-start";
-
-      el.innerHTML = `
-        <img src="${img}" alt="thumb" style="width:100px;height:70px;border-radius:8px;object-fit:cover;">
-        <div>
-          <a href="${item.link}" target="_blank" rel="noopener">${item.title}</a>
-          <div class="src">${d.toLocaleDateString("id-ID", {day: "2-digit", month: "short", year: "numeric"})}</div>
-        </div>
-      `;
-      wrap.appendChild(el);
-    });
-  }catch(e){
-    console.error(e);
-    wrap.innerHTML = `<div class="loader">Tidak bisa memuat berita saat ini. Silakan coba lagi nanti.</div>`;
-  }
+  markets: "https://api.coincap.io/v2/assets?limit=20",
+  news: "https://corsproxy.io/?" + encodeURIComponent("https://api.rss2json.com/v1/api.json?rss_url=https://coinvestasi.com/rss")
 };
 
 const table = document.getElementById("coinsTable");
@@ -52,13 +12,27 @@ const loader = document.getElementById("tableLoader");
 const refreshBtn = document.getElementById("refreshBtn");
 const coinSelect = document.getElementById("coinSelect");
 
+function fmtUSD(x){
+  const n = Number(x || 0);
+  return n.toLocaleString(undefined, { style:"currency", currency:"USD", maximumFractionDigits:2 });
+}
+function pct(x){
+  const n = Number(x || 0);
+  return (n>=0?"+":"") + n.toFixed(2) + "%";
+}
+function iconFor(sym){
+  const s = String(sym||"").toLowerCase();
+  return `https://cryptoicons.org/api/icon/${s}/32`;
+}
+
 async function fetchMarkets(){
   loader.classList.remove("hidden");
   table.classList.add("hidden");
   try{
     const res = await fetch(API.markets, { cache: "no-store" });
     if(!res.ok) throw new Error("Gagal mengambil data pasar");
-    const data = await res.json();
+    const json = await res.json();
+    const data = json.data || [];
     renderTable(data);
     renderSelect(data);
   }catch(e){
@@ -70,13 +44,17 @@ async function fetchMarkets(){
 function renderTable(list){
   tbody.innerHTML = "";
   list.forEach((c, i) => {
+    const price = Number(c.priceUsd||0);
+    const chg = Number(c.changePercent24Hr||0);
+    const mc = Number(c.marketCapUsd||0);
+
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${i+1}</td>
-      <td><img src="${c.image}" alt="" style="height:18px;vertical-align:middle;margin-right:8px">${c.name} <span style="color:#9aa4b2">(${c.symbol.toUpperCase()})</span></td>
-      <td>$${c.current_price.toLocaleString()}</td>
-      <td style="color:${c.price_change_percentage_24h>=0?'#19c37d':'#ef4444'}">${(c.price_change_percentage_24h?.toFixed(2) || 0)}%</td>
-      <td>$${c.market_cap.toLocaleString()}</td>
+      <td><img src="${iconFor(c.symbol)}" onerror="this.style.display='none'" alt="" style="height:18px;vertical-align:middle;margin-right:8px">${c.name} <span style="color:#9aa4b2">(${c.symbol})</span></td>
+      <td>${fmtUSD(price)}</td>
+      <td style="color:${chg>=0?'#19c37d':'#ef4444'}">${pct(chg)}</td>
+      <td>${fmtUSD(mc)}</td>
     `;
     tbody.appendChild(tr);
   });
@@ -86,7 +64,7 @@ function renderTable(list){
 
 function renderSelect(list){
   coinSelect.innerHTML = `<option value="">Pilih koin…</option>` + 
-    list.map(c=>`<option value="${c.id}" data-price="${c.current_price}">${c.name} (${c.symbol.toUpperCase()})</option>`).join("");
+    list.map(c=>`<option value="${c.id}" data-price="${c.priceUsd}">${c.name} (${c.symbol})</option>`).join("");
 }
 
 async function fetchNews(){
@@ -95,23 +73,30 @@ async function fetchNews(){
     const res = await fetch(API.news, { cache: "no-store" });
     if(!res.ok) throw new Error("Gagal mengambil berita");
     const data = await res.json();
+    const items = data.items || [];
     wrap.innerHTML = "";
-    (data || []).slice(0,10).forEach(item => {
-      const el = document.createElement("div");
-      el.className = "news-item";
-      const d = new Date(item.publishedAt);
-      el.innerHTML = `
-        <a href="${item.url}" target="_blank" rel="noopener">${item.title}</a>
-        <div class="src">${item.source?.name || 'Crypto News'} • ${d.toLocaleString()}</div>
+
+    items.slice(0,8).forEach(item => {
+      const d = new Date(item.pubDate);
+      const img = item.thumbnail || "https://via.placeholder.com/1200x600?text=Crypto+News";
+      const card = document.createElement("article");
+      card.className = "news-card";
+      card.innerHTML = `
+        <img class="news-cover" src="${img}" alt="cover">
+        <div class="news-body">
+          <a href="${item.link}" target="_blank" rel="noopener">${item.title}</a>
+          <div class="news-meta">${d.toLocaleDateString("id-ID",{day:"2-digit",month:"short",year:"numeric"})}</div>
+        </div>
       `;
-      wrap.appendChild(el);
+      wrap.appendChild(card);
     });
-    if(!data || data.length===0){
+
+    if(items.length===0){
       wrap.innerHTML = `<div class="loader">Belum ada berita. Coba klik Refresh.</div>`;
     }
   }catch(e){
-    wrap.innerHTML = `<div class="loader">Tidak bisa memuat berita saat ini. Silakan coba lagi nanti.</div>`;
     console.error(e);
+    document.getElementById("newsList").innerHTML = `<div class="loader">Tidak bisa memuat berita saat ini. Silakan coba lagi nanti.</div>`;
   }
 }
 
@@ -120,5 +105,9 @@ refreshBtn?.addEventListener("click", () => {
   fetchNews();
 });
 
+// Auto refresh prices every 60 seconds
+setInterval(fetchMarkets, 60000);
+
+// Initial load
 fetchMarkets();
 fetchNews();
