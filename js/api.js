@@ -4,8 +4,46 @@
 const API = {
   markets: "https://api.allorigins.win/raw?url=" + 
     encodeURIComponent("https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=20&page=1&sparkline=false&price_change_percentage=24h"),
-  news: "https://corsproxy.io/?" + 
-    encodeURIComponent("https://cryptocontrol.io/api/v1/public/news?language=en")
+  // ✅ NEWS INDONESIA + THUMBNAIL
+
+API.news = "https://corsproxy.io/?" + 
+  encodeURIComponent("https://api.rss2json.com/v1/api.json?rss_url=https://crypto.news/id/feed/");
+
+async function fetchNews(){
+  const wrap = document.getElementById("newsList");
+  try{
+    const res = await fetch(API.news, { cache: "no-store" });
+    const json = await res.json();
+
+    if(!json.items){
+      wrap.innerHTML = `<div class="loader">Belum ada berita untuk ditampilkan.</div>`;
+      return;
+    }
+
+    wrap.innerHTML = "";
+    json.items.slice(0,8).forEach(item => {
+      const d = new Date(item.pubDate);
+      const img = item.thumbnail || "https://via.placeholder.com/100x70?text=News";
+
+      const el = document.createElement("div");
+      el.className = "news-item";
+      el.style.display = "flex";
+      el.style.gap = "12px";
+      el.style.alignItems = "flex-start";
+
+      el.innerHTML = `
+        <img src="${img}" alt="thumb" style="width:100px;height:70px;border-radius:8px;object-fit:cover;">
+        <div>
+          <a href="${item.link}" target="_blank" rel="noopener">${item.title}</a>
+          <div class="src">${d.toLocaleDateString("id-ID", {day: "2-digit", month: "short", year: "numeric"})}</div>
+        </div>
+      `;
+      wrap.appendChild(el);
+    });
+  }catch(e){
+    console.error(e);
+    wrap.innerHTML = `<div class="loader">Tidak bisa memuat berita saat ini. Silakan coba lagi nanti.</div>`;
+  }
 };
 
 const table = document.getElementById("coinsTable");
