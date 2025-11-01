@@ -1,16 +1,13 @@
 
-// CryptoApp v5 — Prices via CoinCap (CORS ok), News (ID) via Coinvestasi RSS + corsproxy + thumbnails
+// CryptoApp v6 — Markets via CoinCap, News via CryptoPanic through user's Cloudflare Worker proxy
+const PROXY = "https://crypto-proxy.cintyahuaang07.workers.dev/";
+const TOKEN  = "425f8a56dd62c0dcb199e18d5d2a72600aad0f24";
 
 const API = {
   markets: "https://api.coincap.io/v2/assets?limit=20",
- // ✅ CryptoPanic API via Cloudflare Proxy
-const PROXY = "https://crypto-proxy.cintyahuaang07.workers.dev
-"; // ganti dengan URL worker kamu
-const TOKEN = "425f8a56dd62c0dcb199e18d5d2a72600aad0f24";
-
-API.news = `${PROXY}?url=` + encodeURIComponent(`https://cryptopanic.com/api/v1/posts/?auth_token=${TOKEN}&filter=hot`);
-
-
+  news: PROXY + "?url=" + encodeURIComponent(
+    "https://cryptopanic.com/api/v1/posts/?auth_token=" + TOKEN + "&filter=hot"
+  )
 };
 
 const table = document.getElementById("coinsTable");
@@ -74,34 +71,29 @@ function renderSelect(list){
     list.map(c=>`<option value="${c.id}" data-price="${c.priceUsd}">${c.name} (${c.symbol})</option>`).join("");
 }
 
-async function fetchNews() {
+async function fetchNews(){
   const wrap = document.getElementById("newsList");
-  try {
+  try{
     const res = await fetch(API.news, { cache: "no-store" });
-    const json = await res.json();
+    if(!res.ok) throw new Error("Gagal mengambil berita");
+    const data = await res.json();
+    const items = data.results || [];
     wrap.innerHTML = "";
 
-    (json.results || []).slice(0, 8).forEach(item => {
-      const img = item?.metadata?.image || "https://via.placeholder.com/800x400?text=Crypto+News";
-      const date = new Date(item.created_at).toLocaleDateString("id-ID", {
-        day: "2-digit", month: "short", year: "numeric"
-      });
-
-      const el = document.createElement("div");
-      el.className = "news-card";
-      el.innerHTML = `
-        <img src="${img}" alt="Thumbnail" class="news-thumb">
-        <div class="news-content">
-          <a href="${item.url}" target="_blank" rel="noopener" class="news-title">${item.title}</a>
-          <p class="news-meta">${item.source.title || "CryptoPanic"} • ${date}</p>
+    items.slice(0,8).forEach(item => {
+      const d = new Date(item.created_at);
+      const img = (item.metadata && item.metadata.image) ? item.metadata.image : "https://via.placeholder.com/1200x600?text=Crypto+News";
+      const url = item.url || (item.source && item.source.domain ? ("https://" + item.source.domain) : "#");
+      const card = document.createElement("article");
+      card.className = "news-card";
+      card.innerHTML = `
+        <img class="news-cover" src="${img}" alt="cover">
+        <div class="news-body">
+          <a href="${url}" target="_blank" rel="noopener">${item.title}</a>
+          <div class="news-meta">${d.toLocaleDateString("id-ID",{day:"2-digit",month:"short",year:"numeric"})} • ${(item.source && item.source.title) || "CryptoPanic"}</div>
         </div>
       `;
-      wrap.appendChild(el);
-    });
-  } catch (err) {
-    console.error(err);
-    wrap.innerHTML = `<div class="loader">Tidak bisa memuat berita saat ini. Silakan coba lagi nanti.</div>`;
-  }
+      wrap.appendChild(card);
     });
 
     if(items.length===0){
@@ -118,9 +110,6 @@ refreshBtn?.addEventListener("click", () => {
   fetchNews();
 });
 
-// Auto refresh prices every 60 seconds
 setInterval(fetchMarkets, 60000);
-
-// Initial load
 fetchMarkets();
 fetchNews();
