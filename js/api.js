@@ -1,6 +1,6 @@
 
 // CryptoApp v6 — Markets via CoinCap, News via CryptoPanic through user's Cloudflare Worker proxy
-const PROXY = "https://crypto-proxy.cintyahuaang07.workers.dev/";
+const PROXY = "https://api.allorigins.win/raw?url=";
 const TOKEN  = "425f8a56dd62c0dcb199e18d5d2a72600aad0f24";
 
 const API = {
