@@ -3,7 +3,9 @@
 
 const API = {
   markets: "https://api.coincap.io/v2/assets?limit=20",
-  news: "https://corsproxy.io/?" + encodeURIComponent("https://api.rss2json.com/v1/api.json?rss_url=https://coinvestasi.com/rss")
+  API.news = "https://crypto-proxy.cintyahuaang07.workers.dev/?url=" + 
+  encodeURIComponent("https://cryptopanic.com/api/v1/posts/?auth_token=PUBLIC_TOKEN&filter=hot");
+
 };
 
 const table = document.getElementById("coinsTable");
