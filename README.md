@@ -5,24 +5,18 @@ CryptoLens menampilkan harga, grafik, dan berita kripto secara langsung mengguna
 ## 📁 Struktur Proyek
 ```
 cryptolens/
+│
+├── assets/
+├── css/
+├── js/
+│   ├── api.js
+│   ├── theme.js
+│   └── converter.js
+│
 ├── index.html
-├── terms.html
-├── netlify/functions/
-│   ├── coingecko.js
-│   └── newsapi.js
-├── netlify.toml
-└── assets/
-```
+├── README.md
+└── terms.html   (opsional)
 
-## ⚙️ Deploy di Netlify
-1. Hubungkan ke GitHub
-2. Publish directory: `/`
-3. Functions directory: `netlify/functions`
-4. Tambahkan Environment Variables:
-   - `NEWSAPI_KEY` = (API key dari newsapi.org)
-   - `NODE_VERSION` = `18`
-
-Lalu **Deploy site**.
 
 ## 🧠 Disclaimer
-Hanya untuk edukasi. Tidak memberi saran investasi.
+Hanya untuk edukasi.
