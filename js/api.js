@@ -2,11 +2,9 @@
 // CryptoApp v6 — Markets via CoinCap, News via CryptoPanic through user's Cloudflare Worker proxy
 const PROXY = "https://api.allorigins.win/raw?url=";
 const TOKEN  = "425f8a56dd62c0dcb199e18d5d2a72600aad0f24";
+API.markets = "https://api.coincap.io/v2/assets?limit=20";
+API.news = PROXY + encodeURIComponent("https://cryptopanic.com/api/v1/posts/?auth_token=425f8a56dd62c0dcb199e18d5d2a72600aad0f24&filter=hot");
 
-const API = {
-  markets: "https://api.coincap.io/v2/assets?limit=20",
-  news: PROXY + "?url=" + encodeURIComponent(
-    "https://cryptopanic.com/api/v1/posts/?auth_token=" + TOKEN + "&filter=hot"
   )
 };
 
