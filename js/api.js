@@ -1,8 +1,10 @@
+// ✅ FIXED VERSION (No CORS - GitHub Pages Friendly)
 
-const proxy = "https://corsproxy.io/?";
 const API = {
-  markets: (vs="usd", perPage=20) => `${proxy}https://api.coingecko.com/api/v3/coins/markets?vs_currency=${vs}&order=market_cap_desc&per_page=${perPage}&page=1&sparkline=false&price_change_percentage=24h`,
-  news: `${proxy}news: https://cryptocontrol.io/api/v1/public/news?language=en`
+  markets: "https://api.allorigins.win/raw?url=" + 
+    encodeURIComponent("https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=20&page=1&sparkline=false&price_change_percentage=24h"),
+  news: "https://api.allorigins.win/raw?url=" + 
+    encodeURIComponent("https://cryptocontrol.io/api/v1/public/news?language=en")
 };
 
 const table = document.getElementById("coinsTable");
@@ -15,7 +17,7 @@ async function fetchMarkets(){
   loader.classList.remove("hidden");
   table.classList.add("hidden");
   try{
-    const res = await fetch(API.markets());
+    const res = await fetch(API.markets);
     if(!res.ok) throw new Error("Gagal mengambil data pasar");
     const data = await res.json();
     renderTable(data);
@@ -44,7 +46,8 @@ function renderTable(list){
 }
 
 function renderSelect(list){
-  coinSelect.innerHTML = `<option value="">Pilih koin…</option>` + list.map(c=>`<option value="${c.id}" data-price="${c.current_price}">${c.name} (${c.symbol.toUpperCase()})</option>`).join("");
+  coinSelect.innerHTML = `<option value="">Pilih koin…</option>` + 
+    list.map(c=>`<option value="${c.id}" data-price="${c.current_price}">${c.name} (${c.symbol.toUpperCase()})</option>`).join("");
 }
 
 async function fetchNews(){
@@ -52,15 +55,17 @@ async function fetchNews(){
   try{
     const res = await fetch(API.news);
     if(!res.ok) throw new Error("Gagal mengambil berita");
-    const json = await res.json();
+    const data = await res.json();
     wrap.innerHTML = "";
-    (json.items||[]).slice(0,10).forEach(item => {
+    (data || []).slice(0,10).forEach(item => {
       const el = document.createElement("div");
       el.className = "news-item";
       const d = new Date(item.publishedAt);
-el.innerHTML = `
-  <a href="${item.url}" target="_blank" rel="noopener">${item.title}</a>
-  <div class="src">${item.source?.name || 'Crypto News'} • ${d.toLocaleString()}</div>`;
+      el.innerHTML = `
+        <a href="${item.url}" target="_blank" rel="noopener">${item.title}</a>
+        <div class="src">${item.source?.name || 'Crypto News'} • ${d.toLocaleString()}</div>
+      `;
+      wrap.appendChild(el);
     });
   }catch(e){
     wrap.innerHTML = `<div class="loader">Tidak bisa memuat berita saat ini. Silakan coba lagi nanti.</div>`;
@@ -73,6 +78,5 @@ refreshBtn?.addEventListener("click", () => {
   fetchNews();
 });
 
-// initial load
 fetchMarkets();
 fetchNews();
