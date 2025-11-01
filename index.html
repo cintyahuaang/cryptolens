@@ -4,9 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>CryptoApp — Analyze • Predict • Profit</title>
-  <meta name="description" content="CryptoApp: Dashboard kripto real-time dengan harga, berita, chart, dan converter. Analyze • Predict • Profit." />
+  <meta name="description" content="CryptoApp: Dashboard kripto real-time dengan harga, berita (Indonesia), chart, dan converter." />
   <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
-  <link rel="preconnect" href="https://api.coingecko.com" />
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body class="dark">
@@ -40,6 +39,7 @@
         </thead>
         <tbody></tbody>
       </table>
+      <div class="muted tip">Auto-refresh setiap 60 detik.</div>
     </section>
 
     <section class="card">
@@ -50,8 +50,8 @@
     </section>
 
     <section class="card span-2">
-      <h2>Berita Kripto</h2>
-      <div id="newsList" class="news-list">
+      <h2>Berita Kripto (Indonesia)</h2>
+      <div id="newsList" class="news-grid">
         <div class="loader">Memuat berita…</div>
       </div>
     </section>
