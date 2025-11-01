@@ -2,7 +2,7 @@
 const proxy = "https://corsproxy.io/?";
 const API = {
   markets: (vs="usd", perPage=20) => `${proxy}https://api.coingecko.com/api/v3/coins/markets?vs_currency=${vs}&order=market_cap_desc&per_page=${perPage}&page=1&sparkline=false&price_change_percentage=24h`,
-  news: `${proxy}https://api.rss2json.com/v1/api.json?rss_url=https://cryptopanic.com/feed/`
+  news: `${proxy}news: https://cryptocontrol.io/api/v1/public/news?language=en`
 };
 
 const table = document.getElementById("coinsTable");
