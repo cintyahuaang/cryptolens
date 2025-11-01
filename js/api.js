@@ -1,8 +1,8 @@
 
+const proxy = "https://corsproxy.io/?";
 const API = {
-  markets: (vs="usd", perPage=20) => `https://api.coingecko.com/api/v3/coins/markets?vs_currency=${vs}&order=market_cap_desc&per_page=${perPage}&page=1&sparkline=false&price_change_percentage=24h`,
-  // Simple news source using CryptoPanic RSS via rss2json (no key; rate-limited). Replace with your own if needed.
-  news: `https://api.rss2json.com/v1/api.json?rss_url=https://cryptopanic.com/feed/`
+  markets: (vs="usd", perPage=20) => `${proxy}https://api.coingecko.com/api/v3/coins/markets?vs_currency=${vs}&order=market_cap_desc&per_page=${perPage}&page=1&sparkline=false&price_change_percentage=24h`,
+  news: `${proxy}https://api.rss2json.com/v1/api.json?rss_url=https://cryptopanic.com/feed/`
 };
 
 const table = document.getElementById("coinsTable");
