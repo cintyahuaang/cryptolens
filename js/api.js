@@ -57,9 +57,10 @@ async function fetchNews(){
     (json.items||[]).slice(0,10).forEach(item => {
       const el = document.createElement("div");
       el.className = "news-item";
-      const d = new Date(item.pubDate);
-      el.innerHTML = `<a href="${item.link}" target="_blank" rel="noopener">${item.title}</a><div class="src">${item.author||'CryptoPanic'} • ${d.toLocaleString()}</div>`;
-      wrap.appendChild(el);
+      const d = new Date(item.publishedAt);
+el.innerHTML = `
+  <a href="${item.url}" target="_blank" rel="noopener">${item.title}</a>
+  <div class="src">${item.source?.name || 'Crypto News'} • ${d.toLocaleString()}</div>`;
     });
   }catch(e){
     wrap.innerHTML = `<div class="loader">Tidak bisa memuat berita saat ini. Silakan coba lagi nanti.</div>`;
