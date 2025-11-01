@@ -3,8 +3,8 @@
 const API = {
   markets: "https://api.allorigins.win/raw?url=" + 
     encodeURIComponent("https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=20&page=1&sparkline=false&price_change_percentage=24h"),
-  news: "https://api.allorigins.win/raw?url=" + 
-    encodeURIComponent("https://cryptocontrol.io/api/v1/public/news?language=en")
+  news: "https://corsproxy.io/?" + 
+  encodeURIComponent("https://cryptocontrol.io/api/v1/public/news?language=en"),
 };
 
 const table = document.getElementById("coinsTable");
