@@ -3,8 +3,13 @@
 
 const API = {
   markets: "https://api.coincap.io/v2/assets?limit=20",
-  API.news = "https://crypto-proxy.cintyahuaang07.workers.dev/?url=" + 
-  encodeURIComponent("https://cryptopanic.com/api/v1/posts/?auth_token=PUBLIC_TOKEN&filter=hot");
+ // ✅ CryptoPanic API via Cloudflare Proxy
+const PROXY = "https://crypto-proxy.cintyahuaang07.workers.dev
+"; // ganti dengan URL worker kamu
+const TOKEN = "425f8a56dd62c0dcb199e18d5d2a72600aad0f24";
+
+API.news = `${PROXY}?url=` + encodeURIComponent(`https://cryptopanic.com/api/v1/posts/?auth_token=${TOKEN}&filter=hot`);
+
 
 };
 
@@ -69,28 +74,34 @@ function renderSelect(list){
     list.map(c=>`<option value="${c.id}" data-price="${c.priceUsd}">${c.name} (${c.symbol})</option>`).join("");
 }
 
-async function fetchNews(){
+async function fetchNews() {
   const wrap = document.getElementById("newsList");
-  try{
+  try {
     const res = await fetch(API.news, { cache: "no-store" });
-    if(!res.ok) throw new Error("Gagal mengambil berita");
-    const data = await res.json();
-    const items = data.items || [];
+    const json = await res.json();
     wrap.innerHTML = "";
 
-    items.slice(0,8).forEach(item => {
-      const d = new Date(item.pubDate);
-      const img = item.thumbnail || "https://via.placeholder.com/1200x600?text=Crypto+News";
-      const card = document.createElement("article");
-      card.className = "news-card";
-      card.innerHTML = `
-        <img class="news-cover" src="${img}" alt="cover">
-        <div class="news-body">
-          <a href="${item.link}" target="_blank" rel="noopener">${item.title}</a>
-          <div class="news-meta">${d.toLocaleDateString("id-ID",{day:"2-digit",month:"short",year:"numeric"})}</div>
+    (json.results || []).slice(0, 8).forEach(item => {
+      const img = item?.metadata?.image || "https://via.placeholder.com/800x400?text=Crypto+News";
+      const date = new Date(item.created_at).toLocaleDateString("id-ID", {
+        day: "2-digit", month: "short", year: "numeric"
+      });
+
+      const el = document.createElement("div");
+      el.className = "news-card";
+      el.innerHTML = `
+        <img src="${img}" alt="Thumbnail" class="news-thumb">
+        <div class="news-content">
+          <a href="${item.url}" target="_blank" rel="noopener" class="news-title">${item.title}</a>
+          <p class="news-meta">${item.source.title || "CryptoPanic"} • ${date}</p>
         </div>
       `;
-      wrap.appendChild(card);
+      wrap.appendChild(el);
+    });
+  } catch (err) {
+    console.error(err);
+    wrap.innerHTML = `<div class="loader">Tidak bisa memuat berita saat ini. Silakan coba lagi nanti.</div>`;
+  }
     });
 
     if(items.length===0){
